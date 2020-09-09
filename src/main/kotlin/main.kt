@@ -15,12 +15,12 @@ var moneyTotalMonthVkPay = 0 // итого переводов в ВК
 
 fun main() {
 
-    while (true){
+    while (true) {
         println("Введите сумму (0 - для завершения)")
         val scan = Scanner(System.`in`)
         val summa = scan.nextDouble()
         val amount: Int = (summa * 100).toInt()
-        if (amount==0) break
+        if (amount == 0) break
 
         println("Укажите тип карты/счета:")
         println("1 - MasterCard, 2 - Visa, 3 - VkPay (по умолчанию)")
@@ -64,7 +64,7 @@ fun isLimitPay(typeCard: TypePay, amount: Int): Boolean {
 fun getComission(typeCard: TypePay, amount: Int): Int {
     when (typeCard) {
         TypePay.MASTERCARD_MAESTRO -> {
-            if (amount+moneyTotalMonthMasterCard <= limitLgotMasterCard) {
+            if (amount + moneyTotalMonthMasterCard <= limitLgotMasterCard) {
                 println("Комиссия составила 0 руб.")
                 return 0
             } else {
@@ -99,22 +99,40 @@ fun transfer(typeCard: TypePay, amount: Int): Boolean {
     println("Сумма перевода: ${convertToRouble(amount)} руб.")
     if (isLimitPay(typeCard, amount)) { //если лимит позволяет
         val comissia = getComission(typeCard, amount)
-        when (typeCard){
+        when (typeCard) {
             TypePay.MASTERCARD_MAESTRO -> {
-                moneyTotalMonthCard+= amount
-                moneyTotalMonthMasterCard+=amount
+                moneyTotalMonthCard += amount
+                moneyTotalMonthMasterCard += amount
             }
-            TypePay.VISA_MIR -> moneyTotalMonthCard+= amount
-            TypePay.VKPAY -> moneyTotalMonthVkPay+=amount
+            TypePay.VISA_MIR -> moneyTotalMonthCard += amount
+            TypePay.VKPAY -> moneyTotalMonthVkPay += amount
         }
         val summaPay = amount.plus(comissia)
         println("С вас списано: ${convertToRouble(summaPay)} руб.")
         return true
     } else {
         println("Лимит превышен!")
-        println("Использованный лимит по картам: ${convertToRouble(moneyTotalMonthCard)} руб. из ${convertToRouble(limitPayCardMonth)} руб.")
-        println("Лимит бесплатных переводов по MS/Maestro: ${convertToRouble(moneyTotalMonthMasterCard)} руб. из ${convertToRouble(limitLgotMasterCard)} руб.")
-        println("Использованный лимит по VkPay: ${convertToRouble(moneyTotalMonthVkPay)} руб. из ${convertToRouble(limitPayVKMonth)} руб.")
+        println(
+            "Использованный лимит по картам: ${convertToRouble(moneyTotalMonthCard)} руб. из ${
+                convertToRouble(
+                    limitPayCardMonth
+                )
+            } руб."
+        )
+        println(
+            "Лимит бесплатных переводов по MS/Maestro: ${convertToRouble(moneyTotalMonthMasterCard)} руб. из ${
+                convertToRouble(
+                    limitLgotMasterCard
+                )
+            } руб."
+        )
+        println(
+            "Использованный лимит по VkPay: ${convertToRouble(moneyTotalMonthVkPay)} руб. из ${
+                convertToRouble(
+                    limitPayVKMonth
+                )
+            } руб."
+        )
         return false
     }
 }
