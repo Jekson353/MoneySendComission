@@ -40,10 +40,9 @@ fun isLimitPay(typeCard: TypePay, amount: Int): Boolean {
                 println("Превышен месячный лимит переводов по картам")
                 return false
             } else if (amount > limitPayCardOne) {
-                println("Превышен разовый лимит переводов по картам. Уменьшите сумму и повторите платеж.")
+                println("Превышен разовый лимит переводов по картам (${convertToRouble(limitPayCardOne)} руб). Уменьшите сумму и повторите платеж.")
                 return false
             } else {
-                moneyTotalMonthCard+= amount
                 return true
             }
         }
@@ -52,10 +51,9 @@ fun isLimitPay(typeCard: TypePay, amount: Int): Boolean {
                 println("Превышен месячный лимит переводов в ВК. Уменьшите сумму и повторите платеж.")
                 return false
             } else if (amount > limitPayVKOne) {
-                println("Превышен разовый лимит переводов в ВК. Уменьшите сумму и повторите платеж.")
+                println("Превышен разовый лимит переводов в ВК (${convertToRouble(limitPayVKOne)} руб.). Уменьшите сумму и повторите платеж.")
                 return false
             } else {
-                moneyTotalMonthVkPay+=amount
                 return true
             }
         }
@@ -67,11 +65,9 @@ fun getComission(typeCard: TypePay, amount: Int): Int {
     when (typeCard) {
         TypePay.MASTERCARD_MAESTRO -> {
             if (amount+moneyTotalMonthMasterCard <= limitLgotMasterCard) {
-                moneyTotalMonthMasterCard+=amount
                 println("Комиссия составила 0 руб.")
                 return 0
             } else {
-                moneyTotalMonthMasterCard+=amount
                 val percent = (amount * comissPercentMastercardMaestro / 100_00).plus(comissFixRubleMasterCad)
                 println("Комиссия составила ${convertToRouble(percent)} руб.")
                 return percent
@@ -99,18 +95,28 @@ fun convertToRouble(rouble: Int): Double {
 }
 
 
-fun transfer(typeCard: TypePay, amount: Int) {
+fun transfer(typeCard: TypePay, amount: Int): Boolean {
     println("Сумма перевода: ${convertToRouble(amount)} руб.")
-    if (isLimitPay(typeCard, amount)) {
-        val summaPay = amount.plus(getComission(typeCard, amount))
+    if (isLimitPay(typeCard, amount)) { //если лимит позволяет
+        val comissia = getComission(typeCard, amount)
+        when (typeCard){
+            TypePay.MASTERCARD_MAESTRO -> {
+                moneyTotalMonthCard+= amount
+                moneyTotalMonthMasterCard+=amount
+            }
+            TypePay.VISA_MIR -> moneyTotalMonthCard+= amount
+            TypePay.VKPAY -> moneyTotalMonthVkPay+=amount
+        }
+        val summaPay = amount.plus(comissia)
         println("С вас списано: ${convertToRouble(summaPay)} руб.")
+        return true
     } else {
         println("Лимит превышен!")
         println("Использованный лимит по картам: ${convertToRouble(moneyTotalMonthCard)} руб. из ${convertToRouble(limitPayCardMonth)} руб.")
         println("Лимит бесплатных переводов по MS/Maestro: ${convertToRouble(moneyTotalMonthMasterCard)} руб. из ${convertToRouble(limitLgotMasterCard)} руб.")
         println("Использованный лимит по VkPay: ${convertToRouble(moneyTotalMonthVkPay)} руб. из ${convertToRouble(limitPayVKMonth)} руб.")
+        return false
     }
-
 }
 
 fun getTypePay(typeCard: Int): TypePay {
@@ -125,5 +131,5 @@ fun getTypePay(typeCard: Int): TypePay {
 enum class TypePay {
     MASTERCARD_MAESTRO,
     VISA_MIR,
-    VKPAY
+    VKPAY,
 }
